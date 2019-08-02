@@ -32,7 +32,7 @@ namespace SuperLiner
                         case SLLineType.Line:
                             if (SLContext.Current.ScriptRegister.Values.ContainsKey(definingFunc))
                             {
-                                (SLContext.Current.ScriptRegister.Values[definingFunc] as SLFunction).AppendLine(LineToSLLine(line));
+                                (SLContext.Current.ScriptRegister.Values[definingFunc] as SLFunction).AppendLine(CoupleLineToSLLine(line));
                             }
                             else
                             {
@@ -60,7 +60,6 @@ namespace SuperLiner
                             break;
                         case SLLineType.NotSupport:
                             throw new NotSupportedException();
-                            break;
 
                     }
                 }
@@ -92,15 +91,113 @@ namespace SuperLiner
             else
             {
                 sLLineDescription.LineType = SLLineType.Line;
-                sLLineDescription.LeftScript = line;
+                sLLineDescription.LeftScript = line.Trim();
+                
             }
+
+            
             return sLLineDescription;
         }
 
+        public static SLLine CoupleLineToSLLine(string line)
+        {
+            SLLine slLine = new SLLine();
+            List<object> tmpParameters = new List<object>();
+            bool isActionSet = false;
+            bool isCoupleClosed = true;
+            bool isRegsterNeed = false;
+            bool ignoreNextSpace = false;
+            StringBuilder buffer = new StringBuilder();
+            foreach (char c in line)
+            {
+                switch (c)
+                {
+                    //line is trimmed.
+                    case ' ':
+                        if (ignoreNextSpace)
+                        {
+                            continue;
+                        }
+                        if (isRegsterNeed)
+                        {
+                            throw new NotSupportedException("only one register can be set one time.");
+                        }
+                        if (isActionSet)
+                        {
+                            if (isCoupleClosed)
+                            {
+                                tmpParameters.Add(buffer.ToString());
+                                buffer.Clear();
+                            }
+                            else
+                            {
+                                buffer.Append(c);
+                            }
+
+                        }
+                        else
+                        {
+                            slLine.Action = buffer.ToString();
+                            isActionSet = true;
+                            buffer.Clear();
+                        }
+                        ignoreNextSpace = true;
+                        break;
+                    case '`':
+                        if (isActionSet && !isRegsterNeed)
+                        {
+                            
+                            if (isCoupleClosed)
+                            {
+                                //start new couple
+                                isCoupleClosed = false;
+                            }
+                            else
+                            {
+                                //end couple
+                                isCoupleClosed = true;
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException("` cannot be front of action or register.");
+                        }
+                        ignoreNextSpace = false;
+                        break;
+                    case '>':
+                        if (isActionSet)
+                        {
+                            isRegsterNeed = true;
+                        }
+                        else
+                        {
+                            throw new NotSupportedException("action is needed.");
+                        }
+                        ignoreNextSpace = true;
+                        break;
+                    default:
+                        buffer.Append(c);
+                        ignoreNextSpace = false;
+                        break;
+
+                }
+            }
+            if (isRegsterNeed)
+            {
+                slLine.PipeToRegister = buffer.ToString();
+            }
+            else
+            {
+                tmpParameters.Add(buffer.ToString());
+            }
+
+            slLine.Parameters = tmpParameters.ToArray<object>();
+            return slLine;
+        }
         public static SLLine LineToSLLine(string line)
         {
             SLLine slLine = new SLLine();
-            string[] regOpSplit = line.Split("=>",StringSplitOptions.RemoveEmptyEntries);
+            string[] regOpSplit = line.Split(">",StringSplitOptions.RemoveEmptyEntries);
             if (regOpSplit.Length > 2)
             {
                 throw new NotSupportedException("Cannot use more than one =>.");

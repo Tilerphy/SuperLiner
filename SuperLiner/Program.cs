@@ -8,7 +8,8 @@ namespace SuperLiner
         static void Main(string[] args)
         {
             SLContext c = SLContext.Current;
-            SLLineLoader.ReadLinesFromSrcript("Func a\n Print c\n Set hwllo => bingo\nendfunc\nCall a\nPrint b\nPrint &bingo");
+            string x = System.IO.File.ReadAllText(@"C:\Users\Administrator\Desktop\scripthere.txt");
+            SLLineLoader.ReadLinesFromSrcript(x);
             (c.ScriptRegister.Values["__main__"] as SLFunction).Execute();
             Console.Read();
         }

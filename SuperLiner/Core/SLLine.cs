@@ -28,6 +28,14 @@ namespace SuperLiner.Core
             }
         }
 
+        /// <summary>
+        /// Put all pairs together between "
+        /// </summary>
+        protected void AssembleParameters()
+        {
+
+        }
+
         protected void LoadRegisterValue()
         {
             int index = 0;
