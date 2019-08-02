@@ -18,4 +18,8 @@ call test
 print &aGlobalNumber
 print compeleted.
 
+func tail
+print tailhere.
+endfunc
+
 ```
