@@ -11,5 +11,12 @@ namespace SampleExtension
         {
             Console.WriteLine("Woo!");
         }
+
+        [SLModAction("{j}", "loadjson")]
+        public void LoadJson(string json)
+        {
+            object o = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            Console.WriteLine(o.ToString());
+        }
     }
 }

@@ -82,7 +82,7 @@ namespace SuperLiner
         /// <param name="path"></param>
         public void CheckAndAdd(string path)
         {
-            Assembly abl = Assembly.LoadFile(path);
+            Assembly abl = Assembly.LoadFrom(path);
             CheckAndAdd(abl.GetTypes());
         }
         public static ModManager Init()
@@ -92,7 +92,7 @@ namespace SuperLiner
             DirectoryInfo runningFolder = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             foreach (FileInfo file in runningFolder.EnumerateFiles())
             {
-                if (file.Extension.Equals(".sl", StringComparison.OrdinalIgnoreCase))
+                if (file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
                 {
                     modManager.CheckAndAdd(file.FullName);
                 }
