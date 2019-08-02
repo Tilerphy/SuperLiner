@@ -81,7 +81,7 @@ namespace SuperLiner
         /// </summary>
         /// <param name="path"></param>
         public void CheckAndAdd(string path)
-        {
+        { 
             Assembly abl = Assembly.LoadFrom(path);
             CheckAndAdd(abl.GetTypes());
         }
