@@ -10,7 +10,7 @@ print somethinghere
 endfunc
 
 func setter
-set 123450 => aGlobalNumber
+set 123450 > aGlobalNumber
 endfunc
 
 call setter
