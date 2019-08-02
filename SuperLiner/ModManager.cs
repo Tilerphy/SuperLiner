@@ -1,4 +1,5 @@
-﻿using SuperLiner.Core;
+﻿using SuperLiner.Actions;
+using SuperLiner.Core;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -18,6 +19,7 @@ namespace SuperLiner
 
         public object FindAndInvoke(string name, params object[] ps)
         {
+            name = name.ToLowerInvariant();
             SLModAction action = this.ModActions.ContainsKey(name) ? this.ModActions[name] : null;
             if (action != null)
             {
@@ -30,31 +32,28 @@ namespace SuperLiner
         }
         public void AddModAction(string name, SLModAction action)
         {
+            name = name.ToLowerInvariant();
             this.ModActions.Add(name, action);
         }
 
-        /// <summary>
-        /// Check the if the mod was supported.
-        /// </summary>
-        /// <param name="path"></param>
-        public void CheckAndAdd(string path)
+        public void CheckAndAdd(params Type[] types)
         {
-            Assembly abl = Assembly.LoadFile(path);
-            Type[] ts = abl.GetTypes();
-            foreach (Type t in ts)
+           
+            foreach (Type t in types)
             {
                 if (t.GetCustomAttribute<SLModAttribute>() != null)
                 {
                     object instance = Activator.CreateInstance(t);
-                    MethodInfo[] methods = t.GetMethods(BindingFlags.Public);
+                    MethodInfo[] methods = t.GetMethods();
                     foreach (MethodInfo method in methods)
                     {
-                        SLModActionAttribute actionAttr =method.GetCustomAttribute<SLModActionAttribute>();
-                        if ( actionAttr != null)
+                        SLModActionAttribute actionAttr = method.GetCustomAttribute<SLModActionAttribute>();
+                        if (actionAttr != null)
                         {
-                            if (this.ModActions.ContainsKey(actionAttr.ActionKey))
+                            string name = actionAttr.ActionKey.ToLowerInvariant() ;
+                            if (this.ModActions.ContainsKey(name))
                             {
-                                Console.WriteLine("{0} is duplicated.", actionAttr.ActionKey, path);
+                                Console.WriteLine("{0} is duplicated.", name);
                                 if (this.IgnoreLoadError)
                                 {
                                     continue;
@@ -63,22 +62,33 @@ namespace SuperLiner
                                 {
                                     break;
                                 }
-                                
+
                             }
                             else
                             {
                                 ParameterInfo[] pi = method.GetParameters();
-                                this.AddModAction(actionAttr.ActionKey, new SLModAction(instance, method, pi));
+                                this.AddModAction(name, new SLModAction(instance, method, pi));
                             }
-                           
+
                         }
                     }
                 }
             }
         }
+        /// <summary>
+        /// Check the if the mod was supported.
+        /// </summary>
+        /// <param name="path"></param>
+        public void CheckAndAdd(string path)
+        {
+            Assembly abl = Assembly.LoadFile(path);
+            CheckAndAdd(abl.GetTypes());
+        }
         public static ModManager Init()
         {
-            return new ModManager();
+            ModManager modManager = new ModManager();
+            modManager.CheckAndAdd(new Type[] { typeof(SystemActionsMod) });
+            return modManager;
         }
     }
 }

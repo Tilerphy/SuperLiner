@@ -12,17 +12,43 @@ namespace SuperLiner.Core
 
         public void Execute()
         {
+            LoadRegisterValue();
             object result = SLContext.Current.Mods.FindAndInvoke(Action, Parameters);
             var register = SLContext.Current.RuntimeRegister.Values;
-            if (register.ContainsKey(PipeToRegister))
+            if (!string.IsNullOrEmpty(PipeToRegister))
             {
-                register[PipeToRegister] = result;
+                if (register.ContainsKey(PipeToRegister))
+                {
+                    register[PipeToRegister] = result;
+                }
+                else
+                {
+                    register.Add(PipeToRegister, result);
+                }
             }
-            else
+        }
+
+        protected void LoadRegisterValue()
+        {
+            int index = 0;
+            for (index = 0; index < Parameters.Length; index++)
             {
-                register.Add(PipeToRegister, result);
+                string paramString = Parameters[index].ToString();
+                if (paramString.StartsWith("&"))
+                {
+                    string regName = paramString.Substring(1);
+                    if (SLContext.Current.RuntimeRegister.Values.ContainsKey(regName))
+                    {
+                        Parameters[index] = SLContext.Current.RuntimeRegister.Values[regName];
+                    }
+                    else
+                    {
+                        Parameters[index] = null;
+                    }
+                   
+                }
             }
-            
+
         }
     }
 }
