@@ -15,6 +15,7 @@ endfunc
 
 call setter
 call test
+call tail
 print &aGlobalNumber
 print compeleted.
 
