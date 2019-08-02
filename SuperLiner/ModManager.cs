@@ -2,6 +2,7 @@
 using SuperLiner.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -88,6 +89,14 @@ namespace SuperLiner
         {
             ModManager modManager = new ModManager();
             modManager.CheckAndAdd(new Type[] { typeof(SystemActionsMod) });
+            DirectoryInfo runningFolder = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            foreach (FileInfo file in runningFolder.EnumerateFiles())
+            {
+                if (file.Extension.Equals(".sl", StringComparison.OrdinalIgnoreCase))
+                {
+                    modManager.CheckAndAdd(file.FullName);
+                }
+            }
             return modManager;
         }
     }

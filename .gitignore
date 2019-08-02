@@ -6,3 +6,6 @@
 /SuperLiner/bin/Debug/netcoreapp2.1
 /SuperLiner/obj
 /.vs/SuperLiner/v16
+/SampleExtension/obj
+/SampleExtension/bin/Release/netcoreapp2.1
+/SuperLiner/bin/Release/netcoreapp2.1

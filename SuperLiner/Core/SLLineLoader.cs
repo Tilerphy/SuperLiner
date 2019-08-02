@@ -182,14 +182,22 @@ namespace SuperLiner
 
                 }
             }
-            if (isRegsterNeed)
+            if (isActionSet)
             {
-                slLine.PipeToRegister = buffer.ToString();
+                if (isRegsterNeed)
+                {
+                    slLine.PipeToRegister = buffer.ToString();
+                }
+                else
+                {
+                    tmpParameters.Add(buffer.ToString());
+                }
             }
             else
             {
-                tmpParameters.Add(buffer.ToString());
+                slLine.Action = buffer.ToString();
             }
+            
 
             slLine.Parameters = tmpParameters.ToArray<object>();
             return slLine;
