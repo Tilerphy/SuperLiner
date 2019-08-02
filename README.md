@@ -20,7 +20,13 @@ print &aGlobalNumber
 print compeleted.
 
 func tail
-print tailhere.
+print `tail is here.`
 endfunc
 
 ```
+
+# How to add new Action
+
+A sample named SampleExtension has been added into project.
+
+
