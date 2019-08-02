@@ -28,5 +28,6 @@ endfunc
 # How to add new Action
 
 A sample named SampleExtension has been added into project.
+This project is built for win10-x64, it should be packed as nuget package if you want to run it in docker.
 
 
