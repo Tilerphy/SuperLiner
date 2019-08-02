@@ -57,7 +57,7 @@ TIMES 20 [hello]
 DELETE A
 NETSEND 127.0.0.1:443 hello > back1
 APPENDFILE A &back1
-SET back2 12345
+SET 12345 > back2
 PRINT &back2
 {mark2}
 SETCONTEXT request-header Content-Type json
