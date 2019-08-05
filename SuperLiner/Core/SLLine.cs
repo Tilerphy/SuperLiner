@@ -10,21 +10,35 @@ namespace SuperLiner.Core
         public string PipeToRegister { get; set; }
         public object[] Parameters { get; set; }
 
+        public string Timeline { get; set; }
+
+        public string BelongToFunc { get; set; }
         public void Execute()
         {
-            LoadRegisterValue();
-            object result = SLContext.Current.Mods.FindAndInvoke(Action, Parameters);
-            var register = SLContext.Current.RuntimeRegister.Values;
-            if (!string.IsNullOrEmpty(PipeToRegister))
+            string currentTimeline = SLContext.Current.RuntimeRegister.Values["__current_timeline__"].ToString();
+            string stopTimeline = SLContext.Current.RuntimeRegister.Values["__stop_timeline__"].ToString();
+            List<string> tllist = (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>);
+            if (this.BelongToFunc!="__main__" || (tllist.IndexOf(this.Timeline) >= tllist.IndexOf(currentTimeline)
+                            && (stopTimeline == "__default_stop_timeline__" || tllist.IndexOf(this.Timeline) < tllist.IndexOf(stopTimeline))))
             {
-                if (register.ContainsKey(PipeToRegister))
+                LoadRegisterValue();
+                object result = SLContext.Current.Mods.FindAndInvoke(Action, Parameters);
+                var register = SLContext.Current.RuntimeRegister.Values;
+                if (!string.IsNullOrEmpty(PipeToRegister))
                 {
-                    register[PipeToRegister] = result;
+                    if (register.ContainsKey(PipeToRegister))
+                    {
+                        register[PipeToRegister] = result;
+                    }
+                    else
+                    {
+                        register.Add(PipeToRegister, result);
+                    }
                 }
-                else
-                {
-                    register.Add(PipeToRegister, result);
-                }
+            }
+            else
+            {
+                //Console.WriteLine("ignore {0}-{1}", this.Timeline, this.Action);
             }
         }
 

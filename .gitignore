@@ -9,3 +9,5 @@
 /SampleExtension/obj
 /SampleExtension/bin/Release/netcoreapp2.1
 /SuperLiner/bin/Release/netcoreapp2.1
+/.vs/SuperLiner/DesignTimeBuild
+/SuperLiner/SuperLiner.csproj.user

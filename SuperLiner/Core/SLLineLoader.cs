@@ -17,6 +17,9 @@ namespace SuperLiner
             mainFunc.Name = "__main__";
             string definingFunc = "__main__";
             SLContext.Current.ScriptRegister.Values.Add(mainFunc.Name, mainFunc);
+            List<string> timeline = new List<string>();
+            timeline.Add("__default_timeline__");
+            SLContext.Current.ScriptRegister.Values.Add("__timeline__", timeline);
             while (sr.Peek() != -1)
             {
                 string line = sr.ReadLine().Trim();
@@ -32,7 +35,7 @@ namespace SuperLiner
                         case SLLineType.Line:
                             if (SLContext.Current.ScriptRegister.Values.ContainsKey(definingFunc))
                             {
-                                (SLContext.Current.ScriptRegister.Values[definingFunc] as SLFunction).AppendLine(CoupleLineToSLLine(line));
+                                (SLContext.Current.ScriptRegister.Values[definingFunc] as SLFunction).AppendLine(LineToSLLine(line, definingFunc));
                             }
                             else
                             {
@@ -60,7 +63,27 @@ namespace SuperLiner
                             break;
                         case SLLineType.NotSupport:
                             throw new NotSupportedException();
+                        case SLLineType.Timeline:
 
+                            if (definingFunc == "__main__")
+                            {
+                                List<string> tl = (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>);
+                                if (tl.Contains(lineDesc.LeftScript))
+                                {
+                                    throw new NotSupportedException(string.Format("Cannot create same timeline in __main__. {0}", lineDesc.LeftScript));
+                                }
+                                else
+                                {
+                                    (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>).Add(lineDesc.LeftScript);
+                                }
+                            }
+                            else
+                            {
+                                throw new NotSupportedException(string.Format("Only __main__ supports timeline. {0}", lineDesc.LeftScript));
+                            }
+                            
+                            break;
+                            
                     }
                 }
             }
@@ -70,38 +93,50 @@ namespace SuperLiner
         public static SLLineDescription WhatLine(string line)
         {
             SLLineDescription sLLineDescription = new SLLineDescription();
-            if (line.StartsWith("func", StringComparison.OrdinalIgnoreCase))
+            if (line.StartsWith("--") && line.EndsWith("--"))
             {
-                string[] definingFuncSplit = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                if (definingFuncSplit.Length == 2)
-                {
-                    sLLineDescription.LineType = SLLineType.DefiningFunc;
-
-                }
-                else
-                {
-                    sLLineDescription.LineType = SLLineType.NotSupport;
-                }
-                sLLineDescription.LeftScript = definingFuncSplit[1].Trim();
-            }
-            else if (line.Equals("endfunc", StringComparison.OrdinalIgnoreCase))
-            {
-                sLLineDescription.LineType = SLLineType.EndingFunc;
+                sLLineDescription.LineType = SLLineType.Timeline;
+                sLLineDescription.LeftScript = line.Trim('-');
             }
             else
             {
-                sLLineDescription.LineType = SLLineType.Line;
-                sLLineDescription.LeftScript = line.Trim();
-                
-            }
+                if (line.StartsWith("func", StringComparison.OrdinalIgnoreCase))
+                {
+                    string[] definingFuncSplit = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                    if (definingFuncSplit.Length == 2)
+                    {
+                        sLLineDescription.LineType = SLLineType.DefiningFunc;
 
-            
+                    }
+                    else
+                    {
+                        sLLineDescription.LineType = SLLineType.NotSupport;
+                    }
+                    sLLineDescription.LeftScript = definingFuncSplit[1].Trim();
+                }
+                else if (line.Equals("endfunc", StringComparison.OrdinalIgnoreCase))
+                {
+                    sLLineDescription.LineType = SLLineType.EndingFunc;
+                }
+                else
+                {
+                    sLLineDescription.LineType = SLLineType.Line;
+                    sLLineDescription.LeftScript = line.Trim();
+
+                }
+            }
             return sLLineDescription;
         }
 
-        public static SLLine CoupleLineToSLLine(string line)
+        public static SLLine LineToSLLine(string line, string func)
         {
             SLLine slLine = new SLLine();
+            slLine.BelongToFunc = func;
+            if (slLine.BelongToFunc == "__main__")
+            {
+                List<string> tl = (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>);
+                slLine.Timeline = tl.Last();
+            }
             List<object> tmpParameters = new List<object>();
             bool isActionSet = false;
             bool isCoupleClosed = true;
@@ -200,23 +235,6 @@ namespace SuperLiner
             
 
             slLine.Parameters = tmpParameters.ToArray<object>();
-            return slLine;
-        }
-        public static SLLine LineToSLLine(string line)
-        {
-            SLLine slLine = new SLLine();
-            string[] regOpSplit = line.Split(">",StringSplitOptions.RemoveEmptyEntries);
-            if (regOpSplit.Length > 2)
-            {
-                throw new NotSupportedException("Cannot use more than one =>.");
-            }
-            if (regOpSplit.Length == 2)
-            {
-                slLine.PipeToRegister = regOpSplit[1].Trim();
-            }
-            string[] actionSplit = regOpSplit[0].Split(" ", StringSplitOptions.RemoveEmptyEntries);
-            slLine.Action = actionSplit[0];
-            slLine.Parameters = actionSplit.Skip(1).ToArray<object>();
             return slLine;
         }
     }

@@ -25,5 +25,15 @@ namespace SuperLiner.Actions
         {
             (SLContext.Current.ScriptRegister.Values[funcName] as SLFunction).Execute();
         }
+
+        [SLModAction("{times} {funcName}", "times")]
+        public void Times(string times, string funcName)
+        {
+            int intTimes = int.Parse(times);
+            for (int i = 0; i < intTimes; i++)
+            {
+                (SLContext.Current.ScriptRegister.Values[funcName] as SLFunction).Execute();
+            }
+        }
     }
 }
