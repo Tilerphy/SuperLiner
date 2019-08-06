@@ -162,6 +162,7 @@ namespace SuperLiner
         {
             SLLine slLine = new SLLine();
             slLine.BelongToFunc = func;
+            
             if (slLine.BelongToFunc == "__main__")
             {
                 List<string> tl = (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>);
@@ -172,43 +173,78 @@ namespace SuperLiner
             bool isCoupleClosed = true;
             bool isRegsterNeed = false;
             bool ignoreNextSpace = false;
+            bool isMarkingRemoteLine = false;
+            bool isRegisterDefined = true;
             StringBuilder buffer = new StringBuilder();
             foreach (char c in line)
             {
                 switch (c)
                 {
+                    case '@':
+                        if (isActionSet && isCoupleClosed && isRegisterDefined)
+                        {
+                            if (isMarkingRemoteLine)
+                            {
+                                throw new NotSupportedException("Cannot use @ after @");
+                            }
+                            else
+                            {
+                                isMarkingRemoteLine = true;
+                                slLine.RunAt = new List<string>();
+                                ignoreNextSpace = true;
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException("The remote mark must be defined after Action command");
+                        }
+                       
+                        break;
+
                     //line is trimmed.
                     case ' ':
                         if (ignoreNextSpace)
                         {
                             continue;
                         }
-                        if (isRegsterNeed)
-                        {
-                            throw new NotSupportedException("only one register can be set one time.");
-                        }
-                        if (isActionSet)
-                        {
-                            if (isCoupleClosed)
-                            {
-                                tmpParameters.Add(buffer.ToString());
-                                buffer.Clear();
-                            }
-                            else
-                            {
-                                buffer.Append(c);
-                            }
 
+                        
+                        if (isRegsterNeed && !isRegisterDefined)
+                        {
+                            isRegisterDefined = true;
+                            slLine.PipeToRegister = buffer.ToString();
+                            buffer.Clear();
                         }
                         else
                         {
-                            slLine.Action = buffer.ToString();
-                            isActionSet = true;
-                            buffer.Clear();
+                            if (isActionSet)
+                            {
+                                if (isCoupleClosed)
+                                {
+                                    tmpParameters.Add(buffer.ToString());
+                                    buffer.Clear();
+                                }
+                                else
+                                {
+                                    buffer.Append(c);
+                                }
+
+                            }
+                            else
+                            {
+                                slLine.Action = buffer.ToString();
+                                isActionSet = true;
+                                buffer.Clear();
+                            }
                         }
+                       
                         ignoreNextSpace = true;
                         break;
                     case '`':
+                        if (isMarkingRemoteLine)
+                        {
+                            throw new NotSupportedException("Cannot use ` after @");
+                        }
                         if (isActionSet && !isRegsterNeed)
                         {
                             
@@ -230,9 +266,14 @@ namespace SuperLiner
                         ignoreNextSpace = false;
                         break;
                     case '>':
+                        if (isMarkingRemoteLine)
+                        {
+                            throw new NotSupportedException("Cannot use > after @");
+                        }
                         if (isActionSet)
                         {
                             isRegsterNeed = true;
+                            isRegisterDefined = false;
                         }
                         else
                         {
@@ -249,10 +290,18 @@ namespace SuperLiner
             }
             if (isActionSet)
             {
+                //register tail
                 if (isRegsterNeed)
                 {
+                    isRegisterDefined = true;
                     slLine.PipeToRegister = buffer.ToString();
                 }
+                //remote mark tail
+                else if (isMarkingRemoteLine)
+                {
+                    slLine.RunAt.AddRange(buffer.ToString().Trim().Split(',', StringSplitOptions.RemoveEmptyEntries));
+                }
+                //normal tail
                 else
                 {
                     tmpParameters.Add(buffer.ToString());
@@ -260,6 +309,7 @@ namespace SuperLiner
             }
             else
             {
+                //only action tail
                 slLine.Action = buffer.ToString();
             }
             

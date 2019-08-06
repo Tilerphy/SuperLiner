@@ -11,7 +11,7 @@ namespace SuperLiner.Core
         public object[] Parameters { get; set; }
 
         public string Timeline { get; set; }
-
+        public List<string> RunAt { get; set; }
         public string BelongToFunc { get; set; }
         public void Execute()
         {

@@ -9,10 +9,6 @@ namespace SuperLiner.Actions
     [SLMod]
     public class NetActionsMod
     {
-        //[SLModAction("", "WaitingScript")]
-        //public string WaitingScript(string port)
-        //{
-            
-        //}
+        
     }
 }
