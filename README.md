@@ -41,11 +41,11 @@ FUNC 2
 COPYFILE B A
 ENDFUNC 2
 
-{mark0}
+--mark0--
 MOVEFILE A B                         
 CREATEFILE A abcd,ddfdgads            
 COPYFILE A B
-{mark1}
+--mark1--
 APPENDFILE A nnn
 CHANGEXML A \root\body\div[0] hello
 CHANGEYAML B \aaa\bbb\ccc\d op
@@ -59,7 +59,7 @@ NETSEND 127.0.0.1:443 hello > back1
 APPENDFILE A &back1
 SET 12345 > back2
 PRINT &back2
-{mark2}
+--mark2--
 SETCONTEXT request-header Content-Type json
 SETCONTEXT request-header Method GET
 DOWNLOAD URL A
