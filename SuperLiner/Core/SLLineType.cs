@@ -16,6 +16,8 @@ namespace SuperLiner.Core
         DefiningFunc =1,
         EndingFunc =2,
         NotSupport = 3,
-        Timeline = 4
+        Timeline = 4,
+        Comment = 5,
+        AppendScript = 6
     }
 }

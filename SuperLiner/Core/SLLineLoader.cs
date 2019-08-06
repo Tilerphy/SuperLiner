@@ -9,17 +9,11 @@ namespace SuperLiner
 {
     public class SLLineLoader
     {
-        public static void ReadLinesFromSrcript(string script)
+        private static string definingFunc = "__main__";
+        public static void ReadLinesFromScript(string script)
         {
             StringReader sr = new StringReader(script);
-            SLFunction mainFunc = new SLFunction();
-            //__main__ cannot be endfunc
-            mainFunc.Name = "__main__";
-            string definingFunc = "__main__";
-            SLContext.Current.ScriptRegister.Values.Add(mainFunc.Name, mainFunc);
-            List<string> timeline = new List<string>();
-            timeline.Add("__default_timeline__");
-            SLContext.Current.ScriptRegister.Values.Add("__timeline__", timeline);
+            
             while (sr.Peek() != -1)
             {
                 string line = sr.ReadLine().Trim();
@@ -81,18 +75,54 @@ namespace SuperLiner
                             {
                                 throw new NotSupportedException(string.Format("Only __main__ supports timeline. {0}", lineDesc.LeftScript));
                             }
-                            
                             break;
-                            
+                        case SLLineType.Comment:
+                            break;
+                        case SLLineType.AppendScript:
+                            AppendScript(lineDesc.LeftScript);
+                            break;
+
                     }
                 }
             }
+        }
+        public static void InitScriptLoader()
+        {
+            SLFunction mainFunc = new SLFunction();
+            //__main__ cannot be endfunc
+            mainFunc.Name = "__main__";
+            definingFunc = "__main__";
+            SLContext.Current.ScriptRegister.Values.Add(mainFunc.Name, mainFunc);
+            List<string> timeline = new List<string>();
+            timeline.Add("__default_timeline__");
+            SLContext.Current.ScriptRegister.Values.Add("__timeline__", timeline);
+           
+        }
+
+        public static void AppendScript(string file)
+        {
+            string x = System.IO.File.ReadAllText(file);
+            SLLineLoader.ReadLinesFromScript(x);
         }
 
 
         public static SLLineDescription WhatLine(string line)
         {
             SLLineDescription sLLineDescription = new SLLineDescription();
+            if (line.StartsWith("#"))
+            {
+                sLLineDescription.LineType = SLLineType.Comment;
+                sLLineDescription.LeftScript = line;
+                return sLLineDescription;
+            }
+            if (line.StartsWith("appendscript", StringComparison.OrdinalIgnoreCase))
+            {
+                sLLineDescription.LineType = SLLineType.AppendScript;
+                // the space out of ` will be ignored.
+                // but the space in ` will not be ignored.
+                sLLineDescription.LeftScript = line.Replace("appendscript","", StringComparison.OrdinalIgnoreCase).Trim().Trim('`');
+                return sLLineDescription;
+            }
             if (line.StartsWith("--") && line.EndsWith("--"))
             {
                 sLLineDescription.LineType = SLLineType.Timeline;

@@ -88,11 +88,10 @@ namespace SuperLiner
         public static ModManager Init()
         {
             ModManager modManager = new ModManager();
-            modManager.CheckAndAdd(new Type[] { typeof(SystemActionsMod) });
             DirectoryInfo runningFolder = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             foreach (FileInfo file in runningFolder.EnumerateFiles())
             {
-                if (!file.Name.Equals("SuperLiner.dll", StringComparison.OrdinalIgnoreCase) && file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                if (file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
                 {
                     modManager.CheckAndAdd(file.FullName);
                 }

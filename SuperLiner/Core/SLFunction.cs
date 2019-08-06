@@ -20,9 +20,9 @@ namespace SuperLiner.Core
 
         public void Execute()
         {
-            foreach (SLLine line in Lines)
+            for (int i=0;i<Lines.Count;i++)
             {
-                line.Execute();
+                Lines[i].Execute();
             }
         }
     }
