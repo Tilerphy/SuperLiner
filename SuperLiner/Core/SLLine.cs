@@ -56,23 +56,28 @@ namespace SuperLiner.Core
             foreach (string str in RunAt)
             {
                 string ip = str.Trim();
-                int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Port_Key_Template, ip)].ToString());
-                string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Secure_Key_Template, ip)].ToString();
-                TcpClient client = new TcpClient(ip, port);
-                StreamWriter writer = new StreamWriter(client.GetStream());
-                writer.WriteLine(string.Format("{0}{1}",secure, this.Origin.Split('@')[0]));
-                writer.Flush();
+                this.RemoteExecute(ip);
             }
         }
 
         public void RemoteExecute(string ip)
         {
+            try
+            {
                 int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Port_Key_Template, ip)].ToString());
                 string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Secure_Key_Template, ip)].ToString();
                 TcpClient client = new TcpClient(ip, port);
                 StreamWriter writer = new StreamWriter(client.GetStream());
                 writer.WriteLine(string.Format("{0}{1}", secure, this.Origin.Split('@')[0]));
                 writer.Flush();
+                client.Dispose();
+            }
+            catch (Exception e)
+            {
+                //TODO: LOG
+                //Console.WriteLine("");
+            }
+                
         }
 
         /// <summary>

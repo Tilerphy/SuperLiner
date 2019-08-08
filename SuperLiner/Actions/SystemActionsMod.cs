@@ -1,6 +1,7 @@
 ﻿using SuperLiner.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace SuperLiner.Actions
@@ -72,6 +73,20 @@ namespace SuperLiner.Actions
             {
                 rv.Add(secureKey, secure);
             }
+        }
+
+        [SLModAction("{command} {args}", "cmd")]
+        public void Cmd(string command, string args)
+        {
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.CreateNoWindow = true;
+            info.UseShellExecute = false;
+            info.RedirectStandardInput = true;
+            info.RedirectStandardOutput = true;
+            info.FileName = command;
+            Process ps = Process.Start(info);
+            ps.StandardInput.WriteLine(args);
+
         }
 
 
