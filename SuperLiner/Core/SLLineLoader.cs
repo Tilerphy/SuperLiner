@@ -9,7 +9,8 @@ namespace SuperLiner
 {
     public class SLLineLoader
     {
-        private static string definingFunc = "__main__";
+        private static string definingFunc = Contants.Main_Func_Key;
+
         public static void ReadLinesFromScript(string script)
         {
             StringReader sr = new StringReader(script);
@@ -37,38 +38,38 @@ namespace SuperLiner
                             }
                             break;
                         case SLLineType.DefiningFunc:
-                            if (lineDesc.LeftScript.Equals("__main__", StringComparison.OrdinalIgnoreCase))
+                            if (lineDesc.LeftScript.Equals(Contants.Main_Func_Key, StringComparison.OrdinalIgnoreCase))
                             {
-                                throw new NotSupportedException(string.Format("Cannot define a function named {0}", "__main__"));
+                                throw new NotSupportedException(string.Format("Cannot define a function named {0}", Contants.Main_Func_Key));
                             }
-                            if (definingFunc != "__main__")
+                            if (definingFunc != Contants.Main_Func_Key)
                             {
-                                throw new NotSupportedException(string.Format("Cannot define a nested function."));
+                                throw new NotSupportedException(string.Format("Cannot define a nested function. {0}", definingFunc));
                             }
                             SLContext.Current.ScriptRegister.Values.Add(lineDesc.LeftScript, new SLFunction() { Name = lineDesc.LeftScript });
                             definingFunc = lineDesc.LeftScript;
                             break;
                         case SLLineType.EndingFunc:
-                            if (definingFunc == "__main__")
+                            if (definingFunc == Contants.Main_Func_Key)
                             {
                                 throw new NotSupportedException(string.Format("Cannot end function __main__"));
                             }
-                            definingFunc = "__main__";
+                            definingFunc = Contants.Main_Func_Key;
                             break;
                         case SLLineType.NotSupport:
                             throw new NotSupportedException();
                         case SLLineType.Timeline:
 
-                            if (definingFunc == "__main__")
+                            if (definingFunc == Contants.Main_Func_Key)
                             {
-                                List<string> tl = (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>);
+                                List<string> tl = (SLContext.Current.ScriptRegister.Values[Contants.Timeline_List_Key] as List<string>);
                                 if (tl.Contains(lineDesc.LeftScript))
                                 {
                                     throw new NotSupportedException(string.Format("Cannot create same timeline in __main__. {0}", lineDesc.LeftScript));
                                 }
                                 else
                                 {
-                                    (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>).Add(lineDesc.LeftScript);
+                                    (SLContext.Current.ScriptRegister.Values[Contants.Timeline_List_Key] as List<string>).Add(lineDesc.LeftScript);
                                 }
                             }
                             else
@@ -90,12 +91,12 @@ namespace SuperLiner
         {
             SLFunction mainFunc = new SLFunction();
             //__main__ cannot be endfunc
-            mainFunc.Name = "__main__";
-            definingFunc = "__main__";
+            mainFunc.Name = Contants.Main_Func_Key;
+            definingFunc = Contants.Main_Func_Key;
             SLContext.Current.ScriptRegister.Values.Add(mainFunc.Name, mainFunc);
             List<string> timeline = new List<string>();
-            timeline.Add("__default_timeline__");
-            SLContext.Current.ScriptRegister.Values.Add("__timeline__", timeline);
+            timeline.Add(Contants.Default_Timeline);
+            SLContext.Current.ScriptRegister.Values.Add(Contants.Timeline_List_Key, timeline);
            
         }
 
@@ -109,28 +110,28 @@ namespace SuperLiner
         public static SLLineDescription WhatLine(string line)
         {
             SLLineDescription sLLineDescription = new SLLineDescription();
-            if (line.StartsWith("#"))
+            if (line.StartsWith(Contants.Op.Op_Comment_It))
             {
                 sLLineDescription.LineType = SLLineType.Comment;
                 sLLineDescription.LeftScript = line;
                 return sLLineDescription;
             }
-            if (line.StartsWith("appendscript", StringComparison.OrdinalIgnoreCase))
+            if (line.StartsWith(Contants.Op.Op_Append_Script, StringComparison.OrdinalIgnoreCase))
             {
                 sLLineDescription.LineType = SLLineType.AppendScript;
                 // the space out of ` will be ignored.
                 // but the space in ` will not be ignored.
-                sLLineDescription.LeftScript = line.Replace("appendscript","", StringComparison.OrdinalIgnoreCase).Trim().Trim('`');
+                sLLineDescription.LeftScript = line.Replace(Contants.Op.Op_Append_Script, "", StringComparison.OrdinalIgnoreCase).Trim().Trim('`');
                 return sLLineDescription;
             }
-            if (line.StartsWith("--") && line.EndsWith("--"))
+            if (line.StartsWith(Contants.Op.Op_Quote_Timeline) && line.EndsWith(Contants.Op.Op_Quote_Timeline))
             {
                 sLLineDescription.LineType = SLLineType.Timeline;
-                sLLineDescription.LeftScript = line.Trim('-');
+                sLLineDescription.LeftScript = line.Replace("--","", StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                if (line.StartsWith("func", StringComparison.OrdinalIgnoreCase))
+                if (line.StartsWith(Contants.Op.Op_Start_Define_Func, StringComparison.OrdinalIgnoreCase))
                 {
                     string[] definingFuncSplit = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                     if (definingFuncSplit.Length == 2)
@@ -144,7 +145,7 @@ namespace SuperLiner
                     }
                     sLLineDescription.LeftScript = definingFuncSplit[1].Trim();
                 }
-                else if (line.Equals("endfunc", StringComparison.OrdinalIgnoreCase))
+                else if (line.Equals(Contants.Op.Op_End_Define_Func, StringComparison.OrdinalIgnoreCase))
                 {
                     sLLineDescription.LineType = SLLineType.EndingFunc;
                 }
@@ -160,12 +161,13 @@ namespace SuperLiner
 
         public static SLLine LineToSLLine(string line, string func)
         {
+            line = line.Trim();
             SLLine slLine = new SLLine();
             slLine.BelongToFunc = func;
-            
-            if (slLine.BelongToFunc == "__main__")
+            slLine.Origin = line;
+            if (slLine.BelongToFunc == Contants.Main_Func_Key)
             {
-                List<string> tl = (SLContext.Current.ScriptRegister.Values["__timeline__"] as List<string>);
+                List<string> tl = (SLContext.Current.ScriptRegister.Values[Contants.Timeline_List_Key] as List<string>);
                 slLine.Timeline = tl.Last();
             }
             List<object> tmpParameters = new List<object>();
@@ -281,6 +283,7 @@ namespace SuperLiner
                         }
                         ignoreNextSpace = true;
                         break;
+                    
                     default:
                         buffer.Append(c);
                         ignoreNextSpace = false;
@@ -312,7 +315,7 @@ namespace SuperLiner
                 //only action tail
                 slLine.Action = buffer.ToString();
             }
-            
+
 
             slLine.Parameters = tmpParameters.ToArray<object>();
             return slLine;

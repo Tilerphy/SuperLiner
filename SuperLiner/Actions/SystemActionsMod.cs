@@ -36,6 +36,31 @@ namespace SuperLiner.Actions
             }
         }
 
+        [SLModAction("{ip} {port}, {secure}", "setslaver")]
+        public void setslaverinfo(string ip, string port, string secure)
+        {
+            Dictionary<string,object> rv = SLContext.Current.RuntimeRegister.Values;
+            string portKey = string.Format(Contants.Slaver_Port_Key_Template, ip);
+            string secureKey = string.Format(Contants.Slaver_Secure_Key_Template, ip);
+            if (rv.ContainsKey(portKey))
+            {
+                rv[portKey] = port;
+            }
+            else
+            {
+                rv.Add(portKey, port);
+            }
+
+            if (rv.ContainsKey(secureKey))
+            {
+                rv[secureKey] = secure;
+            }
+            else
+            {
+                rv.Add(secureKey, secure);
+            }
+        }
+
 
     }
 }
