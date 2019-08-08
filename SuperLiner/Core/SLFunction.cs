@@ -7,7 +7,7 @@ namespace SuperLiner.Core
     public class SLFunction
     {
         public string Name { get; set; }
-        private List<SLLine> Lines { get; }
+        public List<SLLine> Lines { get; }
         public SLFunction()
         {
             this.Lines = new List<SLLine>();

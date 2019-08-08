@@ -65,6 +65,16 @@ namespace SuperLiner.Core
             }
         }
 
+        public void RemoteExecute(string ip)
+        {
+                int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Port_Key_Template, ip)].ToString());
+                string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Secure_Key_Template, ip)].ToString();
+                TcpClient client = new TcpClient(ip, port);
+                StreamWriter writer = new StreamWriter(client.GetStream());
+                writer.WriteLine(string.Format("{0}{1}", secure, this.Origin.Split('@')[0]));
+                writer.Flush();
+        }
+
         /// <summary>
         /// Put all pairs together between "
         /// </summary>

@@ -26,6 +26,19 @@ namespace SuperLiner.Actions
             (SLContext.Current.ScriptRegister.Values[funcName] as SLFunction).Execute();
         }
 
+        [SLModAction("{funcName} {iplist}", "RemoteCall")]
+        public void RemoteCall(string funcName, string ipList)
+        {
+            string[] ips = ipList.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            SLFunction slFunc = (SLContext.Current.ScriptRegister.Values[funcName] as SLFunction);
+            foreach (SLLine  slLine in slFunc.Lines)
+            {
+                foreach (string ip in ips)
+                {
+                    slLine.RemoteExecute(ip.Trim());
+                }
+            }
+        }
         [SLModAction("{times} {funcName}", "times")]
         public void Times(string times, string funcName)
         {
