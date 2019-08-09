@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SuperLiner.Core
 {
-    public class Contants
+    public class Constants
     {
         public const string Slaver_Port_Key_Template = "__slaver_info_{0}_port__";
         public const string Slaver_Secure_Key_Template = "__slaver_info_{0}_secure__";

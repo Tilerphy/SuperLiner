@@ -64,8 +64,8 @@ namespace SuperLiner.Actions
         public void setslaverinfo(string ip, string port, string secure)
         {
             Dictionary<string,object> rv = SLContext.Current.RuntimeRegister.Values;
-            string portKey = string.Format(Contants.Slaver_Port_Key_Template, ip);
-            string secureKey = string.Format(Contants.Slaver_Secure_Key_Template, ip);
+            string portKey = string.Format(Constants.Slaver_Port_Key_Template, ip);
+            string secureKey = string.Format(Constants.Slaver_Secure_Key_Template, ip);
             if (rv.ContainsKey(portKey))
             {
                 rv[portKey] = port;
@@ -116,14 +116,24 @@ namespace SuperLiner.Actions
         public void SetHttpHeader(string key, string val)
         {
             Dictionary<string, string> headers = null;
-            if (!SLContext.Current.RuntimeRegister.Values.ContainsKey(Contants.Http_Header_Key))
+            if (!SLContext.Current.RuntimeRegister.Values.ContainsKey(Constants.Http_Header_Key))
             {
-                SLContext.Current.RuntimeRegister.Values.Add(Contants.Http_Header_Key, new Dictionary<string,string>());
+                SLContext.Current.RuntimeRegister.Values.Add(Constants.Http_Header_Key, new Dictionary<string,string>());
                 
             }
-            headers = SLContext.Current.RuntimeRegister.Values[Contants.Http_Header_Key] as Dictionary<string, string>;
+            headers = SLContext.Current.RuntimeRegister.Values[Constants.Http_Header_Key] as Dictionary<string, string>;
             headers.Add(key, val);
 
+        }
+
+        [SLModAction("", "cleanhttpheader")]
+        public void CleanHttpHeader()
+        {
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Constants.Http_Header_Key))
+            {
+                SLContext.Current.RuntimeRegister.Values.Remove(Constants.Http_Header_Key);
+            }
+          
         }
 
         [SLModAction("{url} {output}", "download")]
@@ -131,9 +141,9 @@ namespace SuperLiner.Actions
         {
             HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(url);
             Dictionary<string, string> headers = new Dictionary<string, string>();
-            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Contants.Http_Header_Key))
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Constants.Http_Header_Key))
             {
-                headers = SLContext.Current.RuntimeRegister.Values[Contants.Http_Header_Key] as Dictionary<string, string>;
+                headers = SLContext.Current.RuntimeRegister.Values[Constants.Http_Header_Key] as Dictionary<string, string>;
             }
             foreach (string key in headers.Keys)
             {

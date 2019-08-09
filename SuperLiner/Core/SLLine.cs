@@ -18,11 +18,11 @@ namespace SuperLiner.Core
         public string BelongToFunc { get; set; }
         public void Execute()
         {
-            string currentTimeline = SLContext.Current.RuntimeRegister.Values[Contants.Current_Timeline_Key].ToString();
-            string stopTimeline = SLContext.Current.RuntimeRegister.Values[Contants.Stop_Timeline_Key].ToString();
-            List<string> tllist = (SLContext.Current.ScriptRegister.Values[Contants.Timeline_List_Key] as List<string>);
-            if (this.BelongToFunc!=Contants.Main_Func_Key || (tllist.IndexOf(this.Timeline) >= tllist.IndexOf(currentTimeline)
-                            && (stopTimeline == Contants.Default_Stop_Timeline || tllist.IndexOf(this.Timeline) < tllist.IndexOf(stopTimeline))))
+            string currentTimeline = SLContext.Current.RuntimeRegister.Values[Constants.Current_Timeline_Key].ToString();
+            string stopTimeline = SLContext.Current.RuntimeRegister.Values[Constants.Stop_Timeline_Key].ToString();
+            List<string> tllist = (SLContext.Current.ScriptRegister.Values[Constants.Timeline_List_Key] as List<string>);
+            if (this.BelongToFunc!=Constants.Main_Func_Key || (tllist.IndexOf(this.Timeline) >= tllist.IndexOf(currentTimeline)
+                            && (stopTimeline == Constants.Default_Stop_Timeline || tllist.IndexOf(this.Timeline) < tllist.IndexOf(stopTimeline))))
             {
                 if (this.RunAt != null && this.RunAt.Count > 0)
                 {
@@ -65,8 +65,8 @@ namespace SuperLiner.Core
         {
             try
             {
-                int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Port_Key_Template, ip)].ToString());
-                string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Secure_Key_Template, ip)].ToString();
+                int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Constants.Slaver_Port_Key_Template, ip)].ToString());
+                string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Constants.Slaver_Secure_Key_Template, ip)].ToString();
                 TcpClient client = new TcpClient(ip, port);
                 Stream writer = client.GetStream();
                 byte[] buffer = Encoding.UTF8.GetBytes(this.Origin.Split('@')[0]);
@@ -103,7 +103,7 @@ namespace SuperLiner.Core
             for (index = 0; index < Parameters.Length; index++)
             {
                 string paramString = Parameters[index].ToString();
-                if (paramString.StartsWith(Contants.Op.Op_Get_From_Register))
+                if (paramString.StartsWith(Constants.Op.Op_Get_From_Register))
                 {
                     string regName = paramString.Substring(1);
                     if (SLContext.Current.RuntimeRegister.Values.ContainsKey(regName))

@@ -13,8 +13,8 @@ namespace SuperLiner.Core
 
         public SLContext()
         {
-            this.RuntimeRegister = new SLRegister() { Name = Contants.System_Register_Key};
-            this.ScriptRegister = new SLRegister() { Name = Contants.Runtime_Register_key};
+            this.RuntimeRegister = new SLRegister() { Name = Constants.System_Register_Key};
+            this.ScriptRegister = new SLRegister() { Name = Constants.Runtime_Register_key};
             this.Mods = ModManager.Init();
         }
 
