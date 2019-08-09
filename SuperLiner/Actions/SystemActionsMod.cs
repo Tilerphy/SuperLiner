@@ -50,6 +50,12 @@ namespace SuperLiner.Actions
             }
         }
 
+        [SLModAction("", "pause")]
+        public void Pause()
+        {
+            Console.ReadLine();
+        }
+
         [SLModAction("{ip} {port}, {secure}", "setslaver")]
         public void setslaverinfo(string ip, string port, string secure)
         {

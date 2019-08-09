@@ -18,27 +18,40 @@ namespace SuperLiner
             if (args.Length > 0)
             {
                 //the end of the command is script path
-                string path = args[args.Length - 1];
-                string x = System.IO.File.ReadAllText(path);
-                SLLineLoader.ReadLinesFromScript(x);
-                
-
-                List<string> tl = (SLContext.Current.ScriptRegister.Values[Contants.Timeline_List_Key] as List<string>);
-                if (!tl.Contains(currentTimeline))
+                string path = args[0];
+                if (path == "--slaver" || path == "-s")
                 {
-                    throw new NotSupportedException(string.Format("Cannot find timeline {0}", currentTimeline));
+                    SLSlaveListener l = new SLSlaveListener(args[1], int.Parse(args[2]), args[3]);
                 }
-
-                if (!tl.Contains(defaultStopTimeline) && defaultStopTimeline != Contants.Default_Stop_Timeline)
+                else
                 {
-                    throw new NotSupportedException(string.Format("Cannot find timeline {0}", defaultStopTimeline));
-                }
+                    string x = System.IO.File.ReadAllText(path);
+                    SLLineLoader.ReadLinesFromScript(x);
+
+
+                    List<string> tl = (SLContext.Current.ScriptRegister.Values[Contants.Timeline_List_Key] as List<string>);
+                    if (!tl.Contains(currentTimeline))
+                    {
+                        throw new NotSupportedException(string.Format("Cannot find timeline {0}", currentTimeline));
+                    }
+
+                    if (!tl.Contains(defaultStopTimeline) && defaultStopTimeline != Contants.Default_Stop_Timeline)
+                    {
+                        throw new NotSupportedException(string.Format("Cannot find timeline {0}", defaultStopTimeline));
+                    }
                 (c.ScriptRegister.Values[Contants.Main_Func_Key] as SLFunction).Execute();
+                }
+                
             }
             else
             {
-                SLSlaveListener l = new SLSlaveListener("0.0.0.0", 9000, "123456789");
-               
+                while (true)
+                {
+                    Console.Write("SL >");
+                    string line = Console.ReadLine();
+                    SLLine slLine = SLLineLoader.LineToSLLine(line, Contants.Main_Func_Key);
+                    slLine.Execute();
+                }
             }
             Console.ReadLine();
         }

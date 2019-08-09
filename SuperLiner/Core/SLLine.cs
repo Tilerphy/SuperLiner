@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SuperLiner.Core
@@ -67,8 +68,16 @@ namespace SuperLiner.Core
                 int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Port_Key_Template, ip)].ToString());
                 string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Contants.Slaver_Secure_Key_Template, ip)].ToString();
                 TcpClient client = new TcpClient(ip, port);
-                StreamWriter writer = new StreamWriter(client.GetStream());
-                writer.WriteLine(string.Format("{0}{1}", secure, this.Origin.Split('@')[0]));
+                Stream writer = client.GetStream();
+                byte[] buffer = Encoding.UTF8.GetBytes(this.Origin.Split('@')[0]);
+                RijndaelManaged rm = new RijndaelManaged
+                {
+                    Key = Encoding.UTF8.GetBytes(secure.PadRight(24,'#')),
+                    Mode = CipherMode.ECB,
+                    Padding = PaddingMode.PKCS7
+                };
+                byte[] outBuffer = rm.CreateEncryptor().TransformFinalBlock(buffer, 0, buffer.Length);
+                writer.Write(outBuffer);
                 writer.Flush();
                 client.Dispose();
             }

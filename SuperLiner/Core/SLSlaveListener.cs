@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -26,33 +27,48 @@ namespace SuperLiner.Core
 
         private void HandlingMaster(object state)
         {
-            TcpClient master = state as TcpClient;
-            Stream stream = master.GetStream();
-            StreamReader reader = new StreamReader(stream);
-            string line = reader.ReadLine();
-            if (line.StartsWith(this.Secure))
+            try
             {
-                line = line.Substring(this.Secure.Length);
-                SLLineDescription t = SLLineLoader.WhatLine(line);
-                if (t.LineType == SLLineType.Line)
+                TcpClient master = state as TcpClient;
+                Stream stream = master.GetStream();
+                using (MemoryStream mStream = new MemoryStream())
                 {
-                    SLLine slLine = SLLineLoader.LineToSLLine(line, "__slave_main__");
-                    slLine.Execute();
-                }
-                else
-                {
-                    //TO DO:
-                    //audit
-                    Console.WriteLine("Not support this command in remote.");
+                    byte[] buffer = new byte[10240];
+                    int realRead = 0;
+                    while ((realRead = stream.Read(buffer)) > 0)
+                    {
+                        mStream.Write(buffer, 0, realRead);
+                    }
+
+                    RijndaelManaged rm = new RijndaelManaged
+                    {
+                        Key = Encoding.UTF8.GetBytes(Secure.PadRight(24, '#')),
+                        Mode = CipherMode.ECB,
+                        Padding = PaddingMode.PKCS7
+                    };
+
+                    byte[] plainTextBuffer = rm.CreateDecryptor().TransformFinalBlock(mStream.ToArray(), 0, (int)mStream.Length);
+                    string line = Encoding.UTF8.GetString(plainTextBuffer);
+                    SLLineDescription t = SLLineLoader.WhatLine(line);
+                    if (t.LineType == SLLineType.Line)
+                    {
+                        SLLine slLine = SLLineLoader.LineToSLLine(line, "__slaver_main__");
+                        slLine.Execute();
+                    }
+                    else
+                    {
+                        //TO DO:
+                        //audit
+                        Console.WriteLine("Not support this command in remote.");
+                    }
                 }
             }
-            else
+            catch (Exception e)
             {
-                //TO DO:
-                //audit
-                Console.WriteLine("Secure error from {0}", master.Client.RemoteEndPoint.ToString());
-                master.Dispose();
+                //TODO: Log
+                //do nothing now.
             }
+            
 
         }
     }
