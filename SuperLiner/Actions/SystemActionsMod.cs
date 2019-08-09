@@ -112,6 +112,20 @@ namespace SuperLiner.Actions
             doc.Save(xmlFile);
         }
 
+        [SLModAction("{key} {val}", "sethttpheader")]
+        public void SetHttpHeader(string key, string val)
+        {
+            Dictionary<string, string> headers = null;
+            if (!SLContext.Current.RuntimeRegister.Values.ContainsKey(Contants.Http_Header_Key))
+            {
+                SLContext.Current.RuntimeRegister.Values.Add(Contants.Http_Header_Key, new Dictionary<string,string>());
+                
+            }
+            headers = SLContext.Current.RuntimeRegister.Values[Contants.Http_Header_Key] as Dictionary<string, string>;
+            headers.Add(key, val);
+
+        }
+
         [SLModAction("{url} {output}", "download")]
         public void Download(string url, string output)
         {
