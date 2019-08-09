@@ -183,6 +183,12 @@ namespace SuperLiner
                 switch (c)
                 {
                     case '@':
+                        if (!isCoupleClosed)
+                        {
+                            buffer.Append(c);
+                            ignoreNextSpace = true;
+                            continue;
+                        }    
                         if (isActionSet && isCoupleClosed && isRegisterDefined)
                         {
                             if (isMarkingRemoteLine)
@@ -205,6 +211,12 @@ namespace SuperLiner
 
                     //line is trimmed.
                     case ' ':
+                        if (!isCoupleClosed)
+                        {
+                            buffer.Append(c);
+                            ignoreNextSpace = true;
+                            continue;
+                        }
                         if (ignoreNextSpace)
                         {
                             continue;
@@ -243,10 +255,10 @@ namespace SuperLiner
                         ignoreNextSpace = true;
                         break;
                     case '`':
-                        if (isMarkingRemoteLine)
-                        {
-                            throw new NotSupportedException("Cannot use ` after @");
-                        }
+                        //if (isMarkingRemoteLine)
+                        //{
+                        //    throw new NotSupportedException("Cannot use ` after @");
+                        //}
                         if (isActionSet && !isRegsterNeed)
                         {
                             
@@ -268,6 +280,12 @@ namespace SuperLiner
                         ignoreNextSpace = false;
                         break;
                     case '>':
+                        if (!isCoupleClosed)
+                        {
+                            buffer.Append(c);
+                            ignoreNextSpace = true;
+                            continue;
+                        }
                         if (isMarkingRemoteLine)
                         {
                             throw new NotSupportedException("Cannot use > after @");

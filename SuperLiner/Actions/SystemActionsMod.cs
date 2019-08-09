@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Xml;
 
 namespace SuperLiner.Actions
 {
@@ -94,6 +95,20 @@ namespace SuperLiner.Actions
             ps.StandardInput.WriteLine(args);
 
         }
+
+        [SLModAction("{xml} {xpath} {newval}", "changexml")]
+        public void ChangeXml(string xmlFile, string xpath, string newVal)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlFile);
+            XmlNodeList nodes = doc.SelectNodes(xpath);
+            foreach (XmlNode node in nodes)
+            {
+                node.Value = newVal;
+            }
+            doc.Save(xmlFile);
+        }
+
 
 
     }
