@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Xml;
 
@@ -109,7 +112,36 @@ namespace SuperLiner.Actions
             doc.Save(xmlFile);
         }
 
+        [SLModAction("{url} {output}", "download")]
+        public void Download(string url, string output)
+        {
+            HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(url);
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Contants.Http_Header_Key))
+            {
+                headers = SLContext.Current.RuntimeRegister.Values[Contants.Http_Header_Key] as Dictionary<string, string>;
+            }
+            foreach (string key in headers.Keys)
+            {
+                webrequest.Headers.Add(key, headers[key]);
+            }
+            WebResponse resp = webrequest.GetResponse();
+            using (FileStream fs = new FileStream(output, FileMode.Create, FileAccess.Write))
+            {
+                byte[] buffer = new byte[20480];
+                using (Stream stream = resp.GetResponseStream())
+                {
+                    int realRead = 0;
+                    while ((realRead = stream.Read(buffer))> 0)
+                    {
+                        fs.Write(buffer, 0 ,realRead);
+                    }
+                }
+            }
 
+            resp.Dispose();
+            
+        }
 
     }
 }
