@@ -316,6 +316,7 @@ namespace SuperLiner
                 {
                     isRegisterDefined = true;
                     slLine.PipeToRegister = buffer.ToString();
+
                 }
                 //remote mark tail
                 else if (isMarkingRemoteLine)

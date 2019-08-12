@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SuperLiner.Core
@@ -8,7 +9,6 @@ namespace SuperLiner.Core
     {
         public SLRegister ScriptRegister { get; set; }
         public SLRegister RuntimeRegister { get; set; }
-
         public ModManager Mods { get; private set; }
 
         public SLContext()

@@ -14,9 +14,18 @@ namespace SuperLiner.Actions
     public class  SystemActionsMod
     {
         [SLModAction("{p1}", "print")]
-        public void Print(string p1)
+        public void Print(object p1)
         {
-            Console.WriteLine(p1);
+            if (p1.GetType() == typeof(byte[]))
+            {
+                Console.WriteLine(Encoding.UTF8.GetString(p1 as byte[]));
+            }
+            else
+            {
+                Console.WriteLine(p1);
+            }
+           
+            
         }
 
         [SLModAction("{val}", "set")]
@@ -54,9 +63,10 @@ namespace SuperLiner.Actions
             }
         }
 
-        [SLModAction("", "pause")]
-        public void Pause()
+        [SLModAction("{str}", "pause")]
+        public void Pause(string str)
         {
+            Console.Write(str);
             Console.ReadLine();
         }
 
@@ -136,6 +146,68 @@ namespace SuperLiner.Actions
           
         }
 
+        [SLModAction("{str}", "log")]
+        public void Log(string str)
+        {
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Constants.Debug_Stream_Key))
+            {
+                FileStream fs = SLContext.Current.RuntimeRegister.Values[Constants.Debug_Stream_Key] as FileStream;
+                StreamWriter writer = new StreamWriter(fs);
+                writer.WriteLine(str);
+                writer.Dispose();
+                fs.Dispose();
+            }
+
+        }
+
+        [SLModAction("", "Date")]
+        public string Date()
+        {
+            DateTime d = DateTime.Now;
+            return d.ToString("yyyyMMddhhmmss")+(d.Ticks%1000000);
+
+        }
+
+        [SLModAction("{sw} {path}", "Output")]
+        public void Output(string sw, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new NotSupportedException("You need provide a Path for debug.");
+            }
+
+            
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Constants.Debug_Stream_Key))
+            {
+                if (sw.Equals("on", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                    //DO nothing
+                }
+                else if(sw.Equals("off", StringComparison.OrdinalIgnoreCase))
+                {
+                    SLContext.Current.RuntimeRegister.Values.Remove(Constants.Debug_Stream_Key);
+                    return;
+                }
+            }
+            else
+            {
+                if (sw.Equals("on", StringComparison.OrdinalIgnoreCase))
+                {
+                    SLContext.Current.RuntimeRegister.Values.Add(Constants.Debug_Stream_Key, new FileStream(path, FileMode.Append, FileAccess.Write));
+                    return;
+                }
+                else if (sw.Equals("off", StringComparison.OrdinalIgnoreCase))
+                {
+                    //DO nothing
+                    return;
+                }
+            }
+
+            throw new NotSupportedException("Debug command error.");
+
+        }
+
         [SLModAction("{url} {output}", "download")]
         public void Download(string url, string output)
         {
@@ -165,6 +237,40 @@ namespace SuperLiner.Actions
 
             resp.Dispose();
             
+        }
+
+        [SLModAction("{url}", "httpget")]
+        public byte[] HttpGet(string url)
+        {
+            HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(url);
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(Constants.Http_Header_Key))
+            {
+                headers = SLContext.Current.RuntimeRegister.Values[Constants.Http_Header_Key] as Dictionary<string, string>;
+            }
+            foreach (string key in headers.Keys)
+            {
+                webrequest.Headers.Add(key, headers[key]);
+            }
+            WebResponse resp = webrequest.GetResponse();
+            byte[] result;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                byte[] buffer = new byte[20480];
+                using (Stream stream = resp.GetResponseStream())
+                {
+                    int realRead = 0;
+                    while ((realRead = stream.Read(buffer)) > 0)
+                    {
+                        ms.Write(buffer, 0, realRead);
+                    }
+                }
+                result = ms.ToArray();
+            }
+
+            resp.Dispose();
+            return result;
+
         }
 
     }

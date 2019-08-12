@@ -17,6 +17,7 @@ namespace SuperLiner.Core
         public const string System_Register_Key = "__system_reg__";
         public const string Runtime_Register_key = "__script_reg__";
         public const string Http_Header_Key = "__http_headers__";
+        public const string Debug_Stream_Key = "__debug_stream__";
 
         public class Op
         {
