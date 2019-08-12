@@ -16,7 +16,7 @@ namespace SuperLiner.Core
         public string Timeline { get; set; }
         public List<string> RunAt { get; set; }
         public string BelongToFunc { get; set; }
-        public void Execute()
+        public void Execute(bool remotedLocal = false)
         {
             string currentTimeline = SLContext.Current.RuntimeRegister.Values[Constants.Current_Timeline_Key].ToString();
             string stopTimeline = SLContext.Current.RuntimeRegister.Values[Constants.Stop_Timeline_Key].ToString();
@@ -24,7 +24,7 @@ namespace SuperLiner.Core
             if (this.BelongToFunc!=Constants.Main_Func_Key || (tllist.IndexOf(this.Timeline) >= tllist.IndexOf(currentTimeline)
                             && (stopTimeline == Constants.Default_Stop_Timeline || tllist.IndexOf(this.Timeline) < tllist.IndexOf(stopTimeline))))
             {
-                if (this.RunAt != null && this.RunAt.Count > 0)
+                if (!remotedLocal && this.RunAt != null && this.RunAt.Count > 0)
                 {
                     this.RemoteExecute();
                 }
@@ -57,7 +57,15 @@ namespace SuperLiner.Core
             foreach (string str in RunAt)
             {
                 string ip = str.Trim();
-                this.RemoteExecute(ip);
+                if (ip == ".")
+                {
+                    this.Execute(true);
+                }
+                else
+                {
+                    this.RemoteExecute(ip);
+                }
+                
             }
         }
 
