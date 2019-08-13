@@ -18,7 +18,7 @@ namespace SuperLiner.Core
         public const string Runtime_Register_key = "__script_reg__";
         public const string Http_Header_Key = "__http_headers__";
         public const string Debug_Stream_Key = "__debug_stream__";
-
+        public const string If_Temp_Scripts = "__if_temp_scripts__";
         public class Op
         {
             public const string Op_Get_From_Register = "&";
@@ -27,6 +27,7 @@ namespace SuperLiner.Core
             public const string Op_Quote_Timeline = "--";
             public const string Op_Start_Define_Func = "func";
             public const string Op_End_Define_Func = "endfunc";
+            
         }
     }
 }

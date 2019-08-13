@@ -1,6 +1,7 @@
 ﻿using SuperLiner.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -11,7 +12,7 @@ using System.Xml;
 namespace SuperLiner.Actions
 {
     [SLMod]
-    public class  SystemActionsMod
+    public class SystemActionsMod
     {
         [SLModAction("{p1}", "print")]
         public void Print(object p1)
@@ -24,8 +25,8 @@ namespace SuperLiner.Actions
             {
                 Console.WriteLine(p1);
             }
-           
-            
+
+
         }
 
         [SLModAction("{val}", "set")]
@@ -45,7 +46,7 @@ namespace SuperLiner.Actions
         {
             string[] ips = ipList.Split(",", StringSplitOptions.RemoveEmptyEntries);
             SLFunction slFunc = (SLContext.Current.ScriptRegister.Values[funcName] as SLFunction);
-            foreach (SLLine  slLine in slFunc.Lines)
+            foreach (SLLine slLine in slFunc.Lines)
             {
                 foreach (string ip in ips)
                 {
@@ -60,6 +61,76 @@ namespace SuperLiner.Actions
             for (int i = 0; i < intTimes; i++)
             {
                 (SLContext.Current.ScriptRegister.Values[funcName] as SLFunction).Execute();
+            }
+        }
+
+        [SLModAction("", "if")]
+        public void If(string left, string op, string right, string innerLine)
+        {
+            bool isOk = false;
+            op = op.ToLowerInvariant();
+            switch (op)
+            {
+                case "eq":
+                    isOk = left == right;
+                    break;
+                case "lt":
+                    if (left == right)
+                    {
+                        isOk = false;
+                    }
+                    else
+                    {
+                        List<string> ordered = new List<string> { left, right };
+                        ordered.Sort();
+                        isOk = ordered.IndexOf(left) == 0;
+                    }
+                    break;
+                case "le":
+                    if (left == right)
+                    {
+                        isOk = true;
+                    }
+                    else
+                    {
+                        List<string> ordered = new List<string> { left, right };
+                        ordered.Sort();
+                        isOk = ordered.IndexOf(left) == 0;
+                    }
+                    break;
+                case "gt":
+                    if (left == right)
+                    {
+                        isOk = false;
+                    }
+                    else
+                    {
+                        List<string> ordered = new List<string> { left, right };
+                        ordered.Sort();
+                        isOk = ordered.IndexOf(left) == 1;
+                    }
+                    break;
+                case "ge":
+                    if (left == right)
+                    {
+                        isOk = true;
+                    }
+                    else
+                    {
+                        List<string> ordered = new List<string> { left, right };
+                        ordered.Sort();
+                        isOk = ordered.IndexOf(left) == 1;
+                    }
+                    break;
+                
+                default:
+                    throw new NotSupportedException("if action only supports eq\\lt\\gt operator.");
+            }
+
+            if (isOk)
+            {
+                SLLine slLine = SLLineLoader.LineToSLLine(innerLine, Constants.If_Temp_Scripts);
+                slLine.Execute();
             }
         }
 
@@ -121,6 +192,8 @@ namespace SuperLiner.Actions
             }
             doc.Save(xmlFile);
         }
+
+
 
         [SLModAction("{key} {val}", "sethttpheader")]
         public void SetHttpHeader(string key, string val)
@@ -238,6 +311,8 @@ namespace SuperLiner.Actions
             resp.Dispose();
             
         }
+
+
 
         [SLModAction("{url}", "httpget")]
         public byte[] HttpGet(string url)

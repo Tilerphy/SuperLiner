@@ -1,5 +1,7 @@
-﻿using SuperLiner.Core;
+﻿using Newtonsoft.Json.Linq;
+using SuperLiner.Core;
 using System;
+using System.IO;
 
 namespace SampleExtension
 {
@@ -18,5 +20,6 @@ namespace SampleExtension
             object o = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             Console.WriteLine(o.ToString());
         }
+
     }
 }
