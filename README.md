@@ -80,4 +80,26 @@ endfunc
 A sample named SampleExtension has been added into project.
 This project is built for win10-x64, it should be packed as nuget package if you want to run it in docker.
 
+# Remote Execute Result
+
+Usually, We use `Set something > param` to put `something` into `param` as `Set` action return its paramater.
+But a lucent `set` action will be done after executing a remote line.
+After doing `Set something @10.10.10.10`, `something` will be returned. But here's no variable defined to receive it, so it will be returned to `Context`.
+And because of the lucent `set` action, the line result will be saved into a temporary variable.
+You can use `LastRemoteResult` or `LastRemoteString` action to get the last result, one IP one temporary variable.
+For example:
+```
+Set something @10.10.10.10
+set other @10.10.1.10
+LastRemoteResult 10.10.10.10 > h1
+LastRemoteString 10.10.1.10 > h2
+print &h1
+print &h2
+```
+result is:
+
+```
+something
+other
+```
 
