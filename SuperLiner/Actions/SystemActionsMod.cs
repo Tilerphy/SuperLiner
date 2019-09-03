@@ -166,6 +166,35 @@ namespace SuperLiner.Actions
             }
         }
 
+
+        [SLModAction("{command} {args}", "lastremotestring")]
+        public string LastRemoteString(string ip)
+        {
+            string regKey = string.Format(Constants.Remote_Result_Template, ip);
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(regKey))
+            {
+                return Encoding.UTF8.GetString(SLContext.Current.RuntimeRegister.Values[regKey] as byte[]);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        [SLModAction("{command} {args}", "lastremoteresult")]
+        public byte[] LastRemoteResult(string ip)
+        {
+            string regKey = string.Format(Constants.Remote_Result_Template, ip);
+            if (SLContext.Current.RuntimeRegister.Values.ContainsKey(regKey))
+            {
+                return SLContext.Current.RuntimeRegister.Values[regKey] as byte[];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         [SLModAction("{command} {args}", "cmd")]
         public void Cmd(string command, string args)
         {
@@ -177,6 +206,7 @@ namespace SuperLiner.Actions
             info.FileName = command;
             Process ps = Process.Start(info);
             ps.StandardInput.WriteLine(args);
+            ps.Close();
 
         }
 

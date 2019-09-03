@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 
 namespace SuperLiner.Core
 {
@@ -16,7 +17,8 @@ namespace SuperLiner.Core
         public string Timeline { get; set; }
         public List<string> RunAt { get; set; }
         public string BelongToFunc { get; set; }
-        public void Execute(bool remotedLocal = false)
+
+        public object Execute(bool remotedLocal = false)
         {
             string currentTimeline = SLContext.Current.RuntimeRegister.Values[Constants.Current_Timeline_Key].ToString();
             string stopTimeline = SLContext.Current.RuntimeRegister.Values[Constants.Stop_Timeline_Key].ToString();
@@ -27,6 +29,7 @@ namespace SuperLiner.Core
                 if (!remotedLocal && this.RunAt != null && this.RunAt.Count > 0)
                 {
                     this.RemoteExecute();
+                    return null;
                 }
                 else
                 {
@@ -44,10 +47,12 @@ namespace SuperLiner.Core
                             register.Add(PipeToRegister, result);
                         }
                     }
+                    return result;
                 }
             }
             else
             {
+                return null;
                 //Console.WriteLine("ignore {0}-{1}", this.Timeline, this.Action);
             }
         }
@@ -76,7 +81,7 @@ namespace SuperLiner.Core
                 int port = int.Parse(SLContext.Current.RuntimeRegister.Values[string.Format(Constants.Slaver_Port_Key_Template, ip)].ToString());
                 string secure = SLContext.Current.RuntimeRegister.Values[string.Format(Constants.Slaver_Secure_Key_Template, ip)].ToString();
                 TcpClient client = new TcpClient(ip, port);
-                Stream writer = client.GetStream();
+                Stream pipe = client.GetStream();
                 byte[] buffer = Encoding.UTF8.GetBytes(this.Origin.Split('@')[0]);
                 RijndaelManaged rm = new RijndaelManaged
                 {
@@ -85,14 +90,40 @@ namespace SuperLiner.Core
                     Padding = PaddingMode.PKCS7
                 };
                 byte[] outBuffer = rm.CreateEncryptor().TransformFinalBlock(buffer, 0, buffer.Length);
-                writer.Write(outBuffer);
-                writer.Flush();
+                pipe.Write(outBuffer, 0 , outBuffer.Length);
+                pipe.Write(Encoding.UTF8.GetBytes("\n"));
+                pipe.Flush();
+                byte[] readingBuffer = new byte[10240];
+                int readCount = 0;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    while (true)
+                    {
+                        readCount = pipe.Read(readingBuffer);
+                        ms.Write(readingBuffer, 0, readCount);
+                        if (Encoding.UTF8.GetString(readingBuffer, 0, readCount).EndsWith("\n"))
+                        {
+                            break;
+                        }
+                    }
+                    string regKey = string.Format(Constants.Remote_Result_Template, ip);
+                    
+                    if (SLContext.Current.RuntimeRegister.Values.ContainsKey(regKey))
+                    {
+                        SLContext.Current.RuntimeRegister.Values[regKey] = ms.ToArray().Take((int)ms.Length -1).ToArray();
+                    }
+                    else
+                    {
+                        SLContext.Current.RuntimeRegister.Values.Add(regKey, ms.ToArray().Take((int)ms.Length - 1).ToArray());
+                    }
+                }
+
                 client.Dispose();
             }
             catch (Exception e)
             {
                 //TODO: LOG
-                //Console.WriteLine("");
+                Console.WriteLine(e);
             }
                 
         }

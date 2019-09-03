@@ -13,6 +13,7 @@ namespace SuperLiner.Core
     {
         public TcpListener Listener { get; set; }
         public string Secure { get; set; }
+        
         public SLSlaveListener(string ip, int port, string secure)
         {
             this.Secure = secure;
@@ -27,17 +28,24 @@ namespace SuperLiner.Core
 
         private void HandlingMaster(object state)
         {
+            TcpClient master = state as TcpClient;
+            Stream stream = master.GetStream();
             try
             {
-                TcpClient master = state as TcpClient;
-                Stream stream = master.GetStream();
+
                 using (MemoryStream mStream = new MemoryStream())
                 {
                     byte[] buffer = new byte[10240];
                     int realRead = 0;
-                    while ((realRead = stream.Read(buffer)) > 0)
+                    while (true)
                     {
+                        realRead = stream.Read(buffer);
                         mStream.Write(buffer, 0, realRead);
+                        if (Encoding.UTF8.GetString(buffer, 0, realRead).EndsWith("\n"))
+                        {
+
+                            break;
+                        }
                     }
 
                     RijndaelManaged rm = new RijndaelManaged
@@ -47,13 +55,23 @@ namespace SuperLiner.Core
                         Padding = PaddingMode.PKCS7
                     };
 
-                    byte[] plainTextBuffer = rm.CreateDecryptor().TransformFinalBlock(mStream.ToArray(), 0, (int)mStream.Length);
+                    byte[] plainTextBuffer = rm.CreateDecryptor().TransformFinalBlock(mStream.ToArray(), 0, (int)mStream.Length -1 );
                     string line = Encoding.UTF8.GetString(plainTextBuffer);
                     SLLineDescription t = SLLineLoader.WhatLine(line);
                     if (t.LineType == SLLineType.Line)
                     {
                         SLLine slLine = SLLineLoader.LineToSLLine(line, "__slaver_main__");
-                        slLine.Execute();
+                        object obj = slLine.Execute();
+                        if (obj != null)
+                        {
+                            stream.Write(Encoding.UTF8.GetBytes(obj.ToString()));
+                            stream.Write(Encoding.UTF8.GetBytes("\n"));
+                        }
+                        else
+                        {
+                            stream.Write(Encoding.UTF8.GetBytes("\n"));
+                        }
+                        stream.Flush();
                     }
                     else
                     {
@@ -67,6 +85,11 @@ namespace SuperLiner.Core
             {
                 //TODO: Log
                 //do nothing now.
+            }
+            finally
+            {
+                stream.Flush();
+                stream.Close();
             }
             
 

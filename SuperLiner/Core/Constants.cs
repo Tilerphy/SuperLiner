@@ -19,6 +19,7 @@ namespace SuperLiner.Core
         public const string Http_Header_Key = "__http_headers__";
         public const string Debug_Stream_Key = "__debug_stream__";
         public const string If_Temp_Scripts = "__if_temp_scripts__";
+        public const string Remote_Result_Template = "__remote_reg_{0}__";
         public class Op
         {
             public const string Op_Get_From_Register = "&";

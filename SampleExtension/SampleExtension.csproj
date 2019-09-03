@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <Platforms>AnyCPU</Platforms>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <OutputPath>C:\Users\Administrator\source\repos\SuperLinerGit\SuperLiner\bin\Debug\</OutputPath>
   </PropertyGroup>
 

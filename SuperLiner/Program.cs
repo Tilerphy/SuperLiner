@@ -47,10 +47,18 @@ namespace SuperLiner
             {
                 while (true)
                 {
-                    Console.Write("SL >");
-                    string line = Console.ReadLine();
-                    SLLine slLine = SLLineLoader.LineToSLLine(line, Constants.Main_Func_Key);
-                    slLine.Execute();
+                    try
+                    {
+                        Console.Write("SL >");
+                        string line = Console.ReadLine();
+                        SLLine slLine = SLLineLoader.LineToSLLine(line, Constants.Main_Func_Key);
+                        object obj = slLine.Execute();
+                        Console.WriteLine(obj);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
             }
             Console.ReadLine();
