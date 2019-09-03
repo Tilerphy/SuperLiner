@@ -28,42 +28,48 @@ endfunc
 # Sample Script 2
 
 ```
-FUNC 0                                   
-PRINT 123							  
-ENDFUNC 0                              
+func test
+	print somethinghere
+endfunc
 
-FUNC hello
-COPYFILE A B
-CALL [0]
-ENDFUNC hello
-
-FUNC 2
-COPYFILE B A
-ENDFUNC 2
-
---mark0--
-MOVEFILE A B                         
-CREATEFILE A abcd,ddfdgads            
-COPYFILE A B
---mark1--
-APPENDFILE A nnn
-CHANGEXML A \root\body\div[0] hello
-CHANGEYAML B \aaa\bbb\ccc\d op
-CHECKXML A \root\body\div[0] hello [1] [2]
-TIMES 20 [hello]
+func setter
+	set 123450 > aGlobalNumber
+	Date > currentTime
+	HttpGet http://t.weather.sojson.com/api/weather/city/101030100 > testGet
+	Print &testGet
+endfunc
 
 
+setslaver 10.1.53.252 9000 12345678
+setslaver 10.1.83.73 9000 12345678
+remotecall setter 10.1.53.252
+call setter
+call test
+call tail
+output on .\test.log
+log lolp
+pause `Type any key to continue.`
 
-DELETE A
-NETSEND 127.0.0.1:443 hello > back1
-APPENDFILE A &back1
-SET 12345 > back2
-PRINT &back2
---mark2--
-SETCONTEXT request-header Content-Type json
-SETCONTEXT request-header Method GET
-DOWNLOAD URL A
-RESETCONTEXT
+--version1--
+if ab lt cd `times 10 test`
+#cmd cmd `mkdir C:\kokololo` @10.1.83.73
+print hahahahaha @.,10.1.83.73
+loadjson `[1,2,3]`
+changexml .\test.xml `/xml/item/@src` &currentTime
+sethttpHeader ll kk
+download https://ww4.sinaimg.cn/bmiddle/62d90090ly1g5thpgmej4j20m80gon0r.jpg .\biubiu.png
+
+#version 2 is going
+--version2--
+print &aGlobalNumber @10.1.53.252
+AppendScript `C:\Users\Administrator\Desktop\sh2.txt`
+print compeleted.
+
+
+
+func tail
+	print `tailhere aaa aaa.`
+endfunc
 
 
 
